@@ -44,6 +44,8 @@ type MinQuery interface {
 	// cursorFields lists the fields (in order) to be used to generate
 	// the returned cursor.
 	All(result interface{}, cursorFields ...string) (cursor string, err error)
+
+	One(result interface{}) (err error)
 }
 
 // errTestValue is the error value returned for testing purposes.
@@ -141,6 +143,17 @@ func (mq *minQuery) Cursor(c string) MinQuery {
 func (mq *minQuery) CursorCodec(cc CursorCodec) MinQuery {
 	mq.cursorCodec = cc
 	return mq
+}
+
+func (mq *minQuery) One(result interface{}) error {
+
+	col := mq.db.C(mq.coll).Find(mq.filter)
+
+	if mq.projection != nil {
+		col.Select(mq.projection)
+	}
+
+	return col.One(result)
 }
 
 // All implements MinQuery.All().
